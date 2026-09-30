@@ -55,20 +55,8 @@ async function bootstrap() {
   // 6. Initialize Discord Bot Client (if configured)
   let discordClient: Client | null = null;
   if (env.DISCORD_TOKEN && !env.DISCORD_TOKEN.startsWith('mock_')) {
-    try {
-      discordClient = new Client({
-        intents: [
-          GatewayIntentBits.Guilds,
-          GatewayIntentBits.GuildMessages,
-          GatewayIntentBits.MessageContent,
-          GatewayIntentBits.GuildMembers,
-          GatewayIntentBits.GuildMessageReactions,
-          GatewayIntentBits.DirectMessages,
-        ],
-        partials: [Partials.Channel, Partials.Message, Partials.Reaction],
-      });
-
-      discordClient.once('ready', async (c) => {
+    const setupHandlers = (client: Client) => {
+      client.once('ready', async (c) => {
         logger.info(`[Bootstrap] Discord Client logged in as ${c.user.tag} (${c.user.id})`);
 
         // Register slash commands
@@ -86,17 +74,47 @@ async function bootstrap() {
       });
 
       // Handle slash commands
-      discordClient.on('interactionCreate', async (interaction) => {
+      client.on('interactionCreate', async (interaction) => {
         if (!interaction.isChatInputCommand()) return;
 
         if (interaction.commandName === 'setup') {
           await executeSetup(interaction);
         }
       });
+    };
 
+    try {
+      discordClient = new Client({
+        intents: [
+          GatewayIntentBits.Guilds,
+          GatewayIntentBits.GuildMessages,
+          GatewayIntentBits.MessageContent,
+          GatewayIntentBits.GuildMembers,
+          GatewayIntentBits.GuildMessageReactions,
+          GatewayIntentBits.DirectMessages,
+        ],
+        partials: [Partials.Channel, Partials.Message, Partials.Reaction],
+      });
+
+      setupHandlers(discordClient);
       await discordClient.login(env.DISCORD_TOKEN);
-    } catch (error) {
-      logger.warn('[Bootstrap] Discord login failed (check DISCORD_TOKEN):', error);
+    } catch (error: any) {
+      if (error?.message && error.message.includes('disallowed intents')) {
+        logger.warn('[Bootstrap] Privileged intents disallowed by Discord. Falling back to standard safe intents...');
+        discordClient = new Client({
+          intents: [
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.GuildMessageReactions,
+            GatewayIntentBits.DirectMessages,
+          ],
+          partials: [Partials.Channel, Partials.Message, Partials.Reaction],
+        });
+        setupHandlers(discordClient);
+        await discordClient.login(env.DISCORD_TOKEN);
+      } else {
+        logger.warn('[Bootstrap] Discord login failed (check DISCORD_TOKEN):', error);
+      }
     }
   } else {
     logger.info('[Bootstrap] DISCORD_TOKEN is set to mock/offline. Discord client running in local simulation mode.');
