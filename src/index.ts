@@ -59,7 +59,7 @@ async function bootstrap() {
       client.once('ready', async (c) => {
         logger.info(`[Bootstrap] Discord Client logged in as ${c.user.tag} (${c.user.id})`);
 
-        // Register slash commands
+        // Register slash commands globally AND per-guild for instant availability
         try {
           const rest = new REST({ version: '10' }).setToken(env.DISCORD_TOKEN);
           logger.info('[Bootstrap] Registering application slash commands...');
@@ -67,6 +67,18 @@ async function bootstrap() {
             Routes.applicationCommands(c.user.id),
             { body: [setupCommand.toJSON()] }
           );
+
+          for (const [guildId, guild] of c.guilds.cache) {
+            try {
+              await rest.put(
+                Routes.applicationGuildCommands(c.user.id, guildId),
+                { body: [setupCommand.toJSON()] }
+              );
+              logger.info(`[Bootstrap] Instant slash commands registered for guild: ${guild.name} (${guildId})`);
+            } catch (guildErr) {
+              logger.warn(`Could not register commands for guild ${guildId}:`, guildErr);
+            }
+          }
           logger.info('[Bootstrap] Slash commands registered successfully.');
         } catch (regError) {
           logger.warn('[Bootstrap] Could not register slash commands globally:', regError);
