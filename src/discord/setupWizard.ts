@@ -19,11 +19,11 @@ export interface MinimalGuild {
   name: string;
   ownerId: string;
   channels?: {
-    create: (data: { name: string; type?: number; parent?: string }) => Promise<{ id: string; name: string }>;
+    create: (data: { name: string; type?: number; parent?: string; reason?: string }) => Promise<{ id: string; name: string }>;
     cache?: Map<string, { id: string; name: string }>;
   };
   roles?: {
-    create: (data: { name: string; color?: number | string; permissions?: bigint | string }) => Promise<{ id: string; name: string }>;
+    create: (data: { name: string; color?: number | string; permissions?: bigint | string; reason?: string }) => Promise<{ id: string; name: string }>;
     cache?: Map<string, { id: string; name: string }>;
   };
 }
@@ -58,24 +58,25 @@ export class SetupWizardService {
       rolesCreated.push(r.name);
       if (guild.roles?.create) {
         try {
-          const created = await guild.roles.create({ name: r.name, color: r.color });
+          const created = await guild.roles.create({ name: r.name, color: r.color as any, reason: 'Nexus Setup Wizard' });
           roleIds[r.key] = created.id;
-        } catch {
-          // Fallback to generated ID
+          logger.info(`[SetupWizard] Successfully created role: ${r.name} (${created.id})`);
+        } catch (roleErr: any) {
+          logger.warn(`[SetupWizard] Could not create role ${r.name}: ${roleErr?.message}`);
         }
       }
     }
 
     // Required channels to provision
     const requiredChannels = [
-      { key: 'welcome_channel_id', name: '📌-welcome-and-rules' },
-      { key: 'showcase_channel_id', name: '🎨-portfolio-showcase' },
-      { key: 'help_channel_id', name: '💡-tech-and-design-help' },
-      { key: 'courses_channel_id', name: '📚-recorded-courses' },
-      { key: 'events_channel_id', name: '🎪-community-events' },
-      { key: 'deals_category_id', name: '🤝-escrow-deals' },
-      { key: 'staff_review_channel_id', name: '🛡️-staff-review' },
-      { key: 'audit_logs_channel_id', name: '📜-audit-logs' },
+      { key: 'welcome_channel_id', name: 'welcome-and-rules' },
+      { key: 'showcase_channel_id', name: 'portfolio-showcase' },
+      { key: 'help_channel_id', name: 'tech-and-design-help' },
+      { key: 'courses_channel_id', name: 'recorded-courses' },
+      { key: 'events_channel_id', name: 'community-events' },
+      { key: 'deals_category_id', name: 'ESCROW DEALS' },
+      { key: 'staff_review_channel_id', name: 'staff-review' },
+      { key: 'audit_logs_channel_id', name: 'audit-logs' },
     ];
 
     const channelIds: Record<string, string> = {};
@@ -85,10 +86,16 @@ export class SetupWizardService {
       channelsCreated.push(c.name);
       if (guild.channels?.create) {
         try {
-          const created = await guild.channels.create({ name: c.name });
+          const isCategory = c.key.includes('category');
+          const created = await guild.channels.create({
+            name: c.name,
+            type: isCategory ? 4 : 0,
+            reason: 'Nexus Setup Wizard',
+          });
           channelIds[c.key] = created.id;
-        } catch {
-          // Fallback to generated ID
+          logger.info(`[SetupWizard] Successfully created channel: ${c.name} (${created.id})`);
+        } catch (chanErr: any) {
+          logger.warn(`[SetupWizard] Could not create channel ${c.name}: ${chanErr?.message}`);
         }
       }
     }

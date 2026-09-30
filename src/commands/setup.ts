@@ -37,11 +37,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
   try {
     const lang = (interaction.options.getString('language') as 'ar' | 'en') || 'ar';
     const result = await setupWizardService.provisionGuild(
-      {
-        id: interaction.guild.id,
-        name: interaction.guild.name,
-        ownerId: interaction.guild.ownerId || interaction.user.id,
-      },
+      interaction.guild as any,
       interaction.user.id,
       lang
     );
