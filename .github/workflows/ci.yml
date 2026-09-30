@@ -1,0 +1,88 @@
+name: CI Quality Gate & Security Pipeline
+
+on:
+  push:
+    branches: [main, release/*]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Lint, Types & Behavioral Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Type Check (Zero Errors)
+        run: npx tsc --noEmit
+
+      - name: Run Full Behavioral Test Suite
+        run: npm test
+
+      - name: Verify QA Gate & Rules Parity
+        run: npm run qa-gate
+        env:
+          NODE_ENV: test
+          DISCORD_TOKEN: mock_test_token
+
+  migrations-dryrun:
+    name: PostgreSQL & RLS Migration Dry-Run
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: nexus_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Execute Migration Dry-Run
+        run: |
+          for f in migrations/pg/*.sql; do
+            echo "Applying migration: $f"
+            PGPASSWORD=postgrespassword psql -h localhost -U postgres -d nexus_test -f "$f"
+          done
+
+  security-scan:
+    name: Secret Scanning & Vulnerability Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Run Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: false
+
+      - name: Audit Dependencies
+        run: npm audit --audit-level=high

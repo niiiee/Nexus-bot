@@ -1,0 +1,48 @@
+# render.yaml - Nexus Reference Deployment on Render
+services:
+  # -------------------------------------------------------------
+  # Web Service: Dashboard, REST API, Inbound Webhooks
+  # -------------------------------------------------------------
+  - type: web
+    name: nexus-web
+    env: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: Dockerfile
+    dockerCommand: "node dist/index.js --role=web"
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        sync: false
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+
+  # -------------------------------------------------------------
+  # Background Worker: Always-On Discord Gateway Client
+  # -------------------------------------------------------------
+  - type: worker
+    name: nexus-worker
+    env: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: Dockerfile
+    dockerCommand: "node dist/index.js --role=worker"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STORAGE_DRIVER
+        value: s3

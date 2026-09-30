@@ -1,0 +1,46 @@
+# fly.toml - Nexus Reference Deployment on Fly.io
+app = "nexus-bot"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[processes]
+  app = "node dist/index.js --role=web"
+  worker = "node dist/index.js --role=worker"
+
+# -------------------------------------------------------------
+# Web / Dashboard Service Configuration (With Auto-Stop)
+# -------------------------------------------------------------
+[http_service]
+  processes = ["app"]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/api/health"
+
+# -------------------------------------------------------------
+# Compute & Memory Limits (Worker is ALWAYS-ON)
+# -------------------------------------------------------------
+[[vm]]
+  process = "app"
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+[[vm]]
+  process = "worker"
+  size = "shared-cpu-1x"
+  memory = "512mb"

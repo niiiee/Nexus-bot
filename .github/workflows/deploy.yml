@@ -1,0 +1,49 @@
+name: Continuous Deployment Pipeline
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging Environment
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io Staging
+        run: flyctl deploy --app nexus-staging --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_STAGING }}
+
+      - name: Post-Deploy Staging Smoke Tests
+        run: |
+          curl -f https://nexus-staging.fly.dev/api/health || exit 1
+
+  deploy-production:
+    name: Deploy to Production (Gated Tag)
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io Production
+        run: flyctl deploy --app nexus-production --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_PROD }}
+
+      - name: Post-Deploy Health Check & Alert
+        run: |
+          curl -f https://nexus-production.fly.dev/api/health || exit 1

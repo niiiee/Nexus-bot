@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlRoot">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Senior Progg — Owner Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-icon">🤖</span>
+        <div class="brand-text">
+          <h2>Senior Progg</h2>
+          <span class="badge-owner" data-i18n="ownerPortal">لوحة المالك</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <span class="icon">📊</span> <span data-i18n="overview">نظرة عامة</span>
+        </button>
+        <button class="nav-item" data-tab="members">
+          <span class="icon">👥</span> <span data-i18n="members">الأعضاء والتحقق</span>
+        </button>
+        <button class="nav-item" data-tab="escrow">
+          <span class="icon">🤝</span> <span data-i18n="escrow">الوساطة والإسكرو</span>
+        </button>
+        <button class="nav-item" data-tab="ai">
+          <span class="icon">🧠</span> <span data-i18n="aiBrain">عقل الذكاء الاصطناعي</span>
+        </button>
+        <button class="nav-item" data-tab="live">
+          <span class="icon">⚡</span> <span data-i18n="liveStream">البث الحي للأحداث</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="langToggleBtn" class="btn-secondary">
+          🌐 <span id="langLabel">English</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="page-title">
+          <h1 id="pageHeading" data-i18n="overviewTitle">لوحة التحكم المركزية للسيرفر</h1>
+          <p class="subtitle" data-i18n="overviewSub">متابعة فورية لنشاط المجتمع، الاقتصاد، وعمليات الوساطة</p>
+        </div>
+        <div class="user-pill">
+          <span class="status-dot"></span>
+          <span id="userNameDisplay">Owner Progg</span>
+        </div>
+      </header>
+
+      <!-- View: Overview -->
+      <section id="view-overview" class="view-section active">
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-title" data-i18n="kpiTotalMembers">إجمالي الأعضاء</span>
+            <div class="kpi-value" id="kpiMembers">--</div>
+            <span class="kpi-meta text-success" id="kpiActiveRatio">-- نشط أسبوعياً</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-title" data-i18n="kpiCirculatingCredits">الرصيد المتداول</span>
+            <div class="kpi-value" id="kpiCredits">--</div>
+            <span class="kpi-meta" id="kpiTransactions">-- عملية في السجل</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-title" data-i18n="kpiActiveEscrows">صفقات الإسكرو النشطة</span>
+            <div class="kpi-value" id="kpiEscrows">--</div>
+            <span class="kpi-meta text-warning" id="kpiDisputes">0 نزاعات مفتوحة</span>
+          </div>
+
+          <div class="kpi-card highlight">
+            <span class="kpi-title" data-i18n="kpiHealthScore">مؤشر صحة المجتمع</span>
+            <div class="kpi-value" id="kpiHealth">--/100</div>
+            <span class="kpi-meta" id="kpiHealthGrade">جاري الحساب...</span>
+          </div>
+        </div>
+
+        <!-- Recommendations Card -->
+        <div class="panel-card mt-4">
+          <h3 data-i18n="aiRecommendations">توصيات وملاحظات الذكاء الاصطناعي الأسبوعية</h3>
+          <ul id="recommendationsList" class="recommendations-list">
+            <li>جاري تحميل التوصيات المخصصة...</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- View: Members -->
+      <section id="view-members" class="view-section">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 data-i18n="membersManagement">إدارة الأعضاء والتحقق من الخبرة</h3>
+            <div class="search-box">
+              <input type="text" id="memberSearchInput" placeholder="بحث بالاسم أو المعرف..." data-i18n-placeholder="searchPlaceholder">
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-i18n="colUser">المستخدم</th>
+                  <th data-i18n="colRole">الرتبة</th>
+                  <th data-i18n="colCredits">الرصيد</th>
+                  <th data-i18n="colReputation">السمعة</th>
+                  <th data-i18n="colStage">المرحلة</th>
+                  <th data-i18n="colStatus">الحالة</th>
+                  <th data-i18n="colActions">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="membersTableBody">
+                <tr><td colspan="7" class="text-center">جاري تحميل بيانات الأعضاء...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Escrow & Middlemen -->
+      <section id="view-escrow" class="view-section">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 data-i18n="escrowDealsTitle">صفقات الوساطة وحل النزاعات</h3>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-i18n="colDealId">رقم الصفقة</th>
+                  <th data-i18n="colTitle">العنوان</th>
+                  <th data-i18n="colAmount">المبلغ</th>
+                  <th data-i18n="colStatus">الحالة</th>
+                  <th data-i18n="colActions">تحكم المالك</th>
+                </tr>
+              </thead>
+              <tbody id="dealsTableBody">
+                <tr><td colspan="5" class="text-center">جاري تحميل الصفقات...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: AI Brain -->
+      <section id="view-ai" class="view-section">
+        <div class="panel-card">
+          <h3 data-i18n="aiBrainConfig">إعدادات عقل الذكاء الاصطناعي (Senior Progg AI Brain)</h3>
+          <div class="form-grid mt-4">
+            <div class="form-group">
+              <label data-i18n="providerLabel">المزود النشط (Primary Provider):</label>
+              <select id="aiProviderSelect" class="form-control">
+                <option value="mock">Mock / Deterministic (Testing)</option>
+                <option value="gemini" selected>Google Gemini 1.5 Pro</option>
+                <option value="openai">OpenAI GPT-4o</option>
+                <option value="anthropic">Anthropic Claude 3.5 Sonnet</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label data-i18n="temperatureLabel">درجة الإبداع (Temperature): <span id="tempVal">0.7</span></label>
+              <input type="range" id="aiTempSlider" min="0" max="1" step="0.05" value="0.7">
+            </div>
+
+            <div class="form-group">
+              <label data-i18n="slangLabel">كثافة اللهجة المصرية التقنية (Egyptian Slang Intensity): <span id="slangVal">100%</span></label>
+              <input type="range" id="aiSlangSlider" min="0" max="1" step="0.1" value="1.0">
+            </div>
+
+            <div class="form-group full-width">
+              <button id="saveAiConfigBtn" class="btn-primary" data-i18n="saveConfig">حفظ وتطبيق الإعدادات</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Playground -->
+        <div class="panel-card mt-4">
+          <h3 data-i18n="aiPlayground">منصة اختبار الردود الحية (AI Playground)</h3>
+          <div class="playground-layout mt-3">
+            <textarea id="aiPromptInput" class="form-control" rows="3" placeholder="اكتب سؤالاً أو رسالة لاختبار شخصية ورأي البوت..."></textarea>
+            <button id="sendAiTestBtn" class="btn-primary mt-2" data-i18n="testGenerate">اختبار التوليد الفوري 🚀</button>
+            <div id="aiResponseBox" class="response-box mt-3">
+              <p class="placeholder-text">الرد سيظهر هنا مع بطاقة التفسير وثقة الذكاء الاصطناعي...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Live Events -->
+      <section id="view-live" class="view-section">
+        <div class="panel-card">
+          <h3 data-i18n="liveEventFeed">شريط الأحداث الحية (Real-time SSE Event Feed)</h3>
+          <div id="liveEventsList" class="live-events-container mt-3">
+            <div class="event-item">
+              <span class="event-time">الان</span>
+              <span class="event-badge badge-info">اتصال</span>
+              <span class="event-msg">تم فتح قناة البث الحي بنجاح. بانتظار الإشعارات...</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

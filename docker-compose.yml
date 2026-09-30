@@ -1,0 +1,31 @@
+# docker-compose.yml - Nexus Cloud Profile (Supabase + Cloudflare R2)
+services:
+  nexus-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "dist/index.js", "--role=web"]
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  nexus-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "dist/index.js", "--role=worker"]
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
