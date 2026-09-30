@@ -170,6 +170,11 @@ export class CommunityFundEngine {
     return { entryId: id, entryHash };
   }
 
+  public getLedgerEntries(tenantId: string = 'global_community', limit: number = 10): any[] {
+    const db = getDb();
+    return db.prepare(`SELECT * FROM community_fund_ledger WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?`).all(tenantId, limit) as any[];
+  }
+
   /**
    * Chapter 155: Allocation Buckets [FREE]
    * Automatically splits incoming donations across predefined community buckets.

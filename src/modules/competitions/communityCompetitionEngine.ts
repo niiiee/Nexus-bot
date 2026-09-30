@@ -63,6 +63,15 @@ export class CommunityCompetitionEngine {
     };
   }
 
+  public listCompetitions(tenantId: string = 'global_community'): CompetitionV2[] {
+    const db = getDb();
+    try {
+      return (db.prepare(`SELECT * FROM competitions_v2 WHERE tenant_id = ? ORDER BY created_at DESC`).all(tenantId) as unknown) as CompetitionV2[];
+    } catch {
+      return [];
+    }
+  }
+
   /**
    * Chapter 163: Prize Pool Manager [FREE]
    * Reserves prize funds from the Prize Pool bucket; auto-returns unreserved prizes on conclusion.
