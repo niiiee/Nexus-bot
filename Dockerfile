@@ -26,18 +26,23 @@ ENV NODE_ENV=production
 # Install curl for container health checks
 RUN apk add --no-cache curl
 
-# Create non-privileged service user
-RUN addgroup -S nexus && adduser -S nexus -G nexus
+# Create non-privileged user with standard UID 1000 for Hugging Face Spaces and cloud container runtimes
+RUN adduser -D -u 1000 user
 
 # Copy node_modules and compiled artifacts
-COPY --from=builder --chown=nexus:nexus /app/package*.json ./
-COPY --from=builder --chown=nexus:nexus /app/node_modules ./node_modules
-COPY --from=builder --chown=nexus:nexus /app/dist ./dist
-COPY --chown=nexus:nexus migrations/ ./migrations/
+COPY --from=builder --chown=user:user /app/package*.json ./
+COPY --from=builder --chown=user:user /app/node_modules ./node_modules
+COPY --from=builder --chown=user:user /app/dist ./dist
+COPY --chown=user:user migrations/ ./migrations/
 
-USER nexus
+# Ensure workspace ownership
+RUN chown -R user:user /app
 
+USER user
+
+ENV PORT=7860
+EXPOSE 7860
 EXPOSE 3000
 
-# Default entrypoint runs the web/API service; overridden by worker process
+# Default entrypoint runs the web/API service & bot worker
 CMD ["node", "dist/index.js"]
